@@ -1,4 +1,5 @@
 from collections import defaultdict
+import heapq
 import re
 import os
 import zipfile
@@ -48,10 +49,10 @@ class InvertedIndex:
 		return self.index[word];
 
 	def get_top_occurrences(self, n):
-		return sorted(self.index, key=lambda k: len(self.index[k]), reverse=True)[:n]
+		return heapq.nlargest(n, self.index.keys(), key=lambda k: len(self.index[k]))
 
 	def get_bottom_occurrences(self, n):   
-		return sorted(self.index, key=lambda k: len(self.index[k]))[:n]
+		return heapq.nsmallest(n, self.index.keys(), key=lambda k: len(self.index[k]))
 
 index = InvertedIndex()
 
