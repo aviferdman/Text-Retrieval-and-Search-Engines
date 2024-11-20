@@ -5,21 +5,15 @@ import zipfile
 from tempfile import TemporaryDirectory
 
 class BooleanRetrieval:
-    def __init__(self, boolean_queries, inverted_index):
-        self.boolean_queries = boolean_queries
+    def __init__(self, inverted_index):
         self.inverted_index = inverted_index
 
-    def find_matching_documents(self):
-        results = []
+    def find_matching_documents(self, query):
+        tokens = query.split()
+        result = self.process_query(tokens)
+        results = " ".join(map(str, result))
 
-        for query in self.boolean_queries:
-            tokens = query.split()
-            result = self.process_query(tokens)
-            results.append(" ".join(map(str, result)))
-        
-        # Write the results to "Part_2.txt"
-        with open("Part_2.txt", "w") as file:
-            file.write("\n".join(results))
+        return results
     
     def process_query(self, tokens):
         stack = []
@@ -42,14 +36,10 @@ class BooleanRetrieval:
             elif token == "NOT":
                 # Perform negation
                 list1 = stack.pop()
-                stack.append(self.negate(list1, self.inverted_index.distinct_doc_ids))
+                stack.append(sorted(self.inverted_index.distinct_doc_ids - set(list1)))
         
         # The final result should be the only item left in the stack
         return stack.pop() if stack else []
-    
-    def negate(self, list1, distinctDocIds):
-        return sorted(distinctDocIds - set(list1))
-		
 
 class InvertedIndex:
 	def __init__(self):
@@ -114,11 +104,19 @@ for zip_name in os.listdir(data_dir):
                 file_path = os.path.join(root, file)
                 index.add_document(file_path)
 
-booleanQueries_file_path = os.path.join(curr_dir, "BooleanQueries.txt")
+results = ""
+boolean_retrieval = BooleanRetrieval(index)
 
+booleanQueries_file_path = os.path.join(curr_dir, "BooleanQueries.txt")
 # Read the queries from the file
 with open(booleanQueries_file_path, "r") as file:
     boolean_queries = [line.strip() for line in file]
-    
-boolean_retrieval = BooleanRetrieval(boolean_queries, index)
-boolean_retrieval.find_matching_documents()
+
+# Process each query and aggregate results
+for query in boolean_queries:
+    result = boolean_retrieval.find_matching_documents(query)
+    results += result + "\n"  # Append result with a newline
+
+# Write the aggregated results to "Part_2.txt"
+with open("Part_2.txt", "w") as file:
+    file.write(results.strip())  # Strip the trailing newline before writing
