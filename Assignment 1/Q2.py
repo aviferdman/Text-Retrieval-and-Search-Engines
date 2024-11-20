@@ -22,7 +22,7 @@ class BooleanRetrieval:
         for token in tokens:
             if token not in operators:
                 # Push postings list for the term onto the stack
-                stack.append(self.inverted_index.get(token))
+                stack.append(self.inverted_index.index[token])
             elif token == "AND":
                 # Perform intersection
                 list2 = stack.pop()
@@ -76,13 +76,7 @@ class InvertedIndex:
 		"""
 		for word, docs in sorted(self.index.items()):
 			postings = "-> ".join(f'{idx + 1} ({self.doc_ids[idx]})' for idx in docs)
-			print(f'{word} -> {postings}')    
-
-	def get(self, word):
-		"""
-		print inverted index
-		"""
-		return self.index[word];       
+			print(f'{word} -> {postings}')        
 
 index = InvertedIndex()
 
