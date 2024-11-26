@@ -13,23 +13,20 @@ class InvertedIndex:
 		self.index = defaultdict(list) # InvertedIndex data sreucture
 		self.doc_ids = {} # Doc Id (key) to Doc name (value) dictionary
 
-	def add_document(self, doc_path):
+	def add_document(self, text, docno):
 		"""
 		Add a new document to the InvertedIndex structure.
 		@doc_path - relative path to document
 		"""
 		# add mapping of Document name to Document ID
 		doc_id = len(self.doc_ids)
-		self.doc_ids[doc_id] = doc_path.split('/')[-1]
+		self.doc_ids[doc_id] = docno
 
-		# open and parse document, create set of words and add it to data sreucture.
-		with open(doc_path, 'r') as file:
-			document = file.read()
-			text = re.search(r"<TEXT>(.*?)</TEXT>", document, re.DOTALL)
-			words = text.group(1).strip()
-			sob = set(words.split())
-			for word in sob:
-				self.index[word].append(doc_id)
+		# create set of words and add it to data sreucture.
+		words = text.strip()
+		sob = set(words.split())
+		for word in sob:
+			self.index[word].append(doc_id)
 
 	def print(self):
 		"""
@@ -60,9 +57,11 @@ def main():
 			for root, _, files in os.walk(temp_dir):
 				for file in files:
 					file_path = os.path.join(root, file)
-					index.add_document(file_path)
-
-	index.print()
+					with open(file_path, 'r') as file:
+						fdocs = file.read()
+						docs = re.findall(r"<DOC>.*?<DOCNO>(.*?)</DOCNO>.*?<TEXT>(.*?)</TEXT>.*?</DOC>", fdocs , re.DOTALL)
+						for docno, text in docs:
+							index.add_document(file_path,text,docno)
 
 if __name__ == "__main__":
 	main()
