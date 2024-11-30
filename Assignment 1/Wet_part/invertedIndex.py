@@ -1,5 +1,6 @@
 from collections import defaultdict
 import re
+import heapq
 import os
 import zipfile
 from tempfile import TemporaryDirectory
@@ -36,8 +37,20 @@ class InvertedIndex:
 			postings = "-> ".join(f'{idx + 1} ({self.doc_ids[idx]})' for idx in docs)
 			print(f'{word} -> {postings}')
 
+	def get_top_occurrences(self, n):
+		top_occurrences_tokens = heapq.nlargest(n, self.index.keys(), key=lambda k: len(self.index[k]))
+			
+		return top_occurrences_tokens
+
+	def get_bottom_occurrences(self, n):
+		bottom_occurrences_tokens = heapq.nsmallest(n, self.index.keys(), key=lambda k: len(self.index[k]))
+		
+		return bottom_occurrences_tokens
+
 def main():
-	count = 0
+	
+    # Part 1
+
 	index = InvertedIndex()
 
 	curr_dir = os.path.dirname(os.path.abspath(__file__))
@@ -61,7 +74,16 @@ def main():
 						fdocs = file.read()
 						docs = re.findall(r"<DOC>.*?<DOCNO>(.*?)</DOCNO>.*?<TEXT>(.*?)</TEXT>.*?</DOC>", fdocs , re.DOTALL)
 						for docno, text in docs:
-							index.add_document(file_path,text,docno)
+							index.add_document(text,docno)
+		
+    # Part 3
+	
+	results = index.get_top_occurrences(10)
+	results += index.get_bottom_occurrences(10)
+
+	# Write the results to "Part_3.txt"
+	with open("Part_3.txt", "w") as file:
+		file.write("\n".join(results))
 
 if __name__ == "__main__":
 	main()

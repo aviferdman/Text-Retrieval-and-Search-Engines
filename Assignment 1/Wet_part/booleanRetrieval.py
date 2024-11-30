@@ -1,5 +1,6 @@
 from collections import defaultdict
 import re
+import heapq
 import os
 import zipfile
 from tempfile import TemporaryDirectory
@@ -49,6 +50,7 @@ class InvertedIndex:
 		"""
 		self.index = defaultdict(list) # InvertedIndex data sreucture
 		self.doc_ids = {} # Doc Id (key) to Doc name (value) dictionary
+		self.distinct_doc_ids = set()
 
 	def add_document(self, text, docno):
 		"""
@@ -58,6 +60,7 @@ class InvertedIndex:
 		# add mapping of Document name to Document ID
 		doc_id = len(self.doc_ids)
 		self.doc_ids[doc_id] = docno
+		self.distinct_doc_ids.add(doc_id)
 
 		# create set of words and add it to data sreucture.
 		words = text.strip()
@@ -73,44 +76,63 @@ class InvertedIndex:
 			postings = "-> ".join(f'{idx + 1} ({self.doc_ids[idx]})' for idx in docs)
 			print(f'{word} -> {postings}')
 
-index = InvertedIndex()
+	def get_top_occurrences(self, n):
+		top_occurrences_tokens = heapq.nlargest(n, self.index.keys(), key=lambda k: len(self.index[k]))
+			
+		return top_occurrences_tokens
 
-curr_dir = os.path.dirname(os.path.abspath(__file__))
-data_dir = os.path.join(curr_dir, "data")
+	def get_bottom_occurrences(self, n):
+		bottom_occurrences_tokens = heapq.nsmallest(n, self.index.keys(), key=lambda k: len(self.index[k]))
+		
+		return bottom_occurrences_tokens
 
-if not os.path.exists(data_dir) or not os.path.isdir(data_dir):
-	print("No 'data' folder found")
-	return
+def main():
+	
+    # Part 1
 
-for zip_name in os.listdir(data_dir):
-	zip_path = os.path.join(data_dir, zip_name)
+	index = InvertedIndex()
 
-	with TemporaryDirectory() as temp_dir:
-		with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-			zip_ref.extractall(temp_dir)
+	curr_dir = os.path.dirname(os.path.abspath(__file__))
+	data_dir = os.path.join(curr_dir, "data")
 
-		for root, _, files in os.walk(temp_dir):
-			for file in files:
-				file_path = os.path.join(root, file)
-				with open(file_path, 'r') as file:
-					fdocs = file.read()
-					docs = re.findall(r"<DOC>.*?<DOCNO>(.*?)</DOCNO>.*?<TEXT>(.*?)</TEXT>.*?</DOC>", fdocs , re.DOTALL)
-					for docno, text in docs:
-						index.add_document(file_path,text,docno)
+	if not os.path.exists(data_dir) or not os.path.isdir(data_dir):
+		print("No 'data' folder found")
+		return
 
-results = ""
-boolean_retrieval = BooleanRetrieval(index)
+	for zip_name in os.listdir(data_dir):
+		zip_path = os.path.join(data_dir, zip_name)
 
-booleanQueries_file_path = os.path.join(curr_dir, "BooleanQueries.txt")
-# Read the queries from the file
-with open(booleanQueries_file_path, "r") as file:
-    boolean_queries = [line.strip() for line in file]
+		with TemporaryDirectory() as temp_dir:
+			with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+				zip_ref.extractall(temp_dir)
 
-# Process each query and aggregate results
-for query in boolean_queries:
-    result = boolean_retrieval.find_matching_documents(query)
-    results += result + "\n"  # Append result with a newline
+			for root, _, files in os.walk(temp_dir):
+				for file in files:
+					file_path = os.path.join(root, file)
+					with open(file_path, 'r') as file:
+						fdocs = file.read()
+						docs = re.findall(r"<DOC>.*?<DOCNO>(.*?)</DOCNO>.*?<TEXT>(.*?)</TEXT>.*?</DOC>", fdocs , re.DOTALL)
+						for docno, text in docs:
+							index.add_document(text,docno)
 
-# Write the aggregated results to "Part_2.txt"
-with open("Part_2.txt", "w") as file:
-    file.write(results.strip())  # Strip the trailing newline before writing
+    # Part 2
+	
+	results = ""
+	boolean_retrieval = BooleanRetrieval(index)
+
+	booleanQueries_file_path = os.path.join(curr_dir, "BooleanQueries.txt")
+	# Read the queries from the file
+	with open(booleanQueries_file_path, "r") as file:
+		boolean_queries = [line.strip() for line in file]
+
+	# Process each query and aggregate results
+	for query in boolean_queries:
+		result = boolean_retrieval.find_matching_documents(query)
+		results += result + "\n"  # Append result with a newline
+
+	# Write the aggregated results to "Part_2.txt"
+	with open("Part_2.txt", "w") as file:
+		file.write(results.strip())  # Strip the trailing newline before writing
+
+if __name__ == "__main__":
+	main()
