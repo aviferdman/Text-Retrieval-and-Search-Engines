@@ -107,7 +107,9 @@ class BooleanRetrieval:
                 stack.append(not_operator(len(self.inverted_index.doc_ids), list1))
 
         # The final result should be the only item left in the stack
-        return stack.pop() if stack else []
+        doc_ids = stack.pop() if stack else []
+        
+        return self.inverted_index.convert_from_doc_id_to_name(doc_ids)
 
 class InvertedIndex:
 	def __init__(self):
@@ -150,6 +152,12 @@ class InvertedIndex:
 		bottom_occurrences_tokens = heapq.nsmallest(n, self.index.keys(), key=lambda k: len(self.index[k]))
 		
 		return bottom_occurrences_tokens
+      
+	def convert_from_doc_id_to_name(self, doc_id_list):
+		results = []
+		for doc_id in doc_id_list:
+			results.append(self.doc_ids[doc_id])          
+		return results            
 
 def main():
 	
