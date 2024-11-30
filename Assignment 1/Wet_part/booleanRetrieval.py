@@ -5,6 +5,73 @@ import os
 import zipfile
 from tempfile import TemporaryDirectory
 
+def intersection(listA, listB):
+    """
+    Returns the intersection of two sorted lists.
+    """
+    results = []
+    i, j = 0, 0
+    
+    while i < len(listA) and j < len(listB):
+        if listA[i] < listB[j]:
+            i += 1
+        elif listA[i] > listB[j]:
+            j += 1
+        else:
+            results.append(listA[i])
+            i += 1
+            j += 1
+    
+    return results
+
+def union(listA, listB):
+    """
+    Returns the union of two sorted lists.
+    """
+    results = []
+    i, j = 0, 0
+    
+    while i < len(listA) and j < len(listB):
+        if listA[i] < listB[j]:
+            results.append(listA[i])
+            i += 1
+        elif listA[i] > listB[j]:
+            results.append(listB[j])
+            j += 1
+        else:
+            results.append(listA[i])
+            i += 1
+            j += 1
+    
+    # Add remaining elements from either list
+    while i < len(listA):
+        results.append(listA[i])
+        i += 1
+    
+    while j < len(listB):
+        results.append(listB[j])
+        j += 1
+    
+    return results
+
+def not_operator(num, exclude_list):
+    """
+    Returns a sorted list of all numbers from 0 to `num` (not including `num`) 
+    excluding the numbers in `exclude_list`.
+    """
+    results = []
+    i = 0 
+    exclude_len = len(exclude_list)
+    
+    for x in range(num):
+        # Skip numbers in exclude_list
+        if i < exclude_len and x == exclude_list[i]:
+            i += 1  # Move the pointer in exclude_list
+        else:
+            results.append(x)
+    
+    return results
+
 class BooleanRetrieval:
     def __init__(self, inverted_index):
         self.inverted_index = inverted_index
@@ -28,16 +95,16 @@ class BooleanRetrieval:
                 # Perform intersection
                 list2 = stack.pop()
                 list1 = stack.pop()
-                stack.append(sorted(set(list1) & set(list2)))
+                stack.append(intersection(list1, list2))
             elif token == "OR":
                 # Perform union
                 list2 = stack.pop()
                 list1 = stack.pop()
-                stack.append(sorted(set(list1) | set(list2)))
+                stack.append(union(list1, list2))
             elif token == "NOT":
                 # Perform negation
                 list1 = stack.pop()
-                stack.append(sorted(self.inverted_index.distinct_doc_ids - set(list1)))
+                stack.append(not_operator(len(self.inverted_index.doc_ids), list1))
 
         # The final result should be the only item left in the stack
         return stack.pop() if stack else []
@@ -50,7 +117,6 @@ class InvertedIndex:
 		"""
 		self.index = defaultdict(list) # InvertedIndex data sreucture
 		self.doc_ids = {} # Doc Id (key) to Doc name (value) dictionary
-		self.distinct_doc_ids = set()
 
 	def add_document(self, text, docno):
 		"""
@@ -60,7 +126,6 @@ class InvertedIndex:
 		# add mapping of Document name to Document ID
 		doc_id = len(self.doc_ids)
 		self.doc_ids[doc_id] = docno
-		self.distinct_doc_ids.add(doc_id)
 
 		# create set of words and add it to data sreucture.
 		words = text.strip()
