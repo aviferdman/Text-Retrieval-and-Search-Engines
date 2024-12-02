@@ -17,17 +17,17 @@ class InvertedIndex:
 	def add_document(self, text, docno):
 		"""
 		Add a new document to the InvertedIndex structure.
-		@doc_path - relative path to document
 		"""
 		# add mapping of Document name to Document ID
 		doc_id = len(self.doc_ids)
-		self.doc_ids[doc_id] = docno
+		self.doc_ids[doc_id] = docno[0]
 
 		# create set of words and add it to data sreucture.
-		words = text.strip()
-		sob = set(words.split())
-		for word in sob:
-			self.index[word].append(doc_id)
+		for t_section in text:
+			words = t_section.strip()
+			sob = set(words.split())
+			for word in sob:
+				self.index[word].append(doc_id)
 
 	def print(self):
 		"""
@@ -39,16 +39,16 @@ class InvertedIndex:
 
 	def get_top_occurrences(self, n):
 		top_occurrences_tokens = heapq.nlargest(n, self.index.keys(), key=lambda k: len(self.index[k]))
-			
+
 		return top_occurrences_tokens
 
 	def get_bottom_occurrences(self, n):
 		bottom_occurrences_tokens = heapq.nsmallest(n, self.index.keys(), key=lambda k: len(self.index[k]))
-		
+
 		return bottom_occurrences_tokens
 
 def main():
-	
+
     # Part 1
 
 	index = InvertedIndex()
@@ -72,12 +72,14 @@ def main():
 					file_path = os.path.join(root, file)
 					with open(file_path, 'r') as file:
 						fdocs = file.read()
-						docs = re.findall(r"<DOC>.*?<DOCNO>(.*?)</DOCNO>.*?<TEXT>(.*?)</TEXT>.*?</DOC>", fdocs , re.DOTALL)
-						for docno, text in docs:
+						docs = fdocs.split(r"<DOC>")
+						for doc in docs[1:]:
+							docno = re.findall(r"<DOCNO> (.*?) </DOCNO>", doc)
+							text = re.findall(r"<TEXT>(.*?)</TEXT>", doc, re.DOTALL)
 							index.add_document(text,docno)
-		
+
     # Part 3
-	
+
 	results = index.get_top_occurrences(10)
 	results += index.get_bottom_occurrences(10)
 

@@ -11,7 +11,7 @@ def intersection(listA, listB):
     """
     results = []
     i, j = 0, 0
-    
+
     while i < len(listA) and j < len(listB):
         if listA[i] < listB[j]:
             i += 1
@@ -21,7 +21,7 @@ def intersection(listA, listB):
             results.append(listA[i])
             i += 1
             j += 1
-    
+
     return results
 
 def union(listA, listB):
@@ -30,7 +30,7 @@ def union(listA, listB):
     """
     results = []
     i, j = 0, 0
-    
+
     while i < len(listA) and j < len(listB):
         if listA[i] < listB[j]:
             results.append(listA[i])
@@ -42,34 +42,34 @@ def union(listA, listB):
             results.append(listA[i])
             i += 1
             j += 1
-    
+
     # Add remaining elements from either list
     while i < len(listA):
         results.append(listA[i])
         i += 1
-    
+
     while j < len(listB):
         results.append(listB[j])
         j += 1
-    
+
     return results
 
 def not_operator(num, exclude_list):
     """
-    Returns a sorted list of all numbers from 0 to `num` (not including `num`) 
+    Returns a sorted list of all numbers from 0 to `num` (not including `num`)
     excluding the numbers in `exclude_list`.
     """
     results = []
-    i = 0 
+    i = 0
     exclude_len = len(exclude_list)
-    
+
     for x in range(num):
         # Skip numbers in exclude_list
         if i < exclude_len and x == exclude_list[i]:
             i += 1  # Move the pointer in exclude_list
         else:
             results.append(x)
-    
+
     return results
 
 class BooleanRetrieval:
@@ -108,7 +108,7 @@ class BooleanRetrieval:
 
         # The final result should be the only item left in the stack
         doc_ids = stack.pop() if stack else []
-        
+
         return self.inverted_index.convert_from_doc_id_to_name(doc_ids)
 
 class InvertedIndex:
@@ -123,17 +123,17 @@ class InvertedIndex:
 	def add_document(self, text, docno):
 		"""
 		Add a new document to the InvertedIndex structure.
-		@doc_path - relative path to document
 		"""
 		# add mapping of Document name to Document ID
 		doc_id = len(self.doc_ids)
-		self.doc_ids[doc_id] = docno
+		self.doc_ids[doc_id] = docno[0]
 
 		# create set of words and add it to data sreucture.
-		words = text.strip()
-		sob = set(words.split())
-		for word in sob:
-			self.index[word].append(doc_id)
+		for t_section in text:
+			words = t_section.strip()
+			sob = set(words.split())
+			for word in sob:
+				self.index[word].append(doc_id)
 
 	def print(self):
 		"""
@@ -145,22 +145,22 @@ class InvertedIndex:
 
 	def get_top_occurrences(self, n):
 		top_occurrences_tokens = heapq.nlargest(n, self.index.keys(), key=lambda k: len(self.index[k]))
-			
+
 		return top_occurrences_tokens
 
 	def get_bottom_occurrences(self, n):
 		bottom_occurrences_tokens = heapq.nsmallest(n, self.index.keys(), key=lambda k: len(self.index[k]))
-		
+
 		return bottom_occurrences_tokens
-      
+
 	def convert_from_doc_id_to_name(self, doc_id_list):
 		results = []
 		for doc_id in doc_id_list:
-			results.append(self.doc_ids[doc_id])          
-		return results            
+			results.append(self.doc_ids[doc_id])
+		return results
 
 def main():
-	
+
     # Part 1
 
 	index = InvertedIndex()
@@ -184,12 +184,14 @@ def main():
 					file_path = os.path.join(root, file)
 					with open(file_path, 'r') as file:
 						fdocs = file.read()
-						docs = re.findall(r"<DOC>.*?<DOCNO>(.*?)</DOCNO>.*?<TEXT>(.*?)</TEXT>.*?</DOC>", fdocs , re.DOTALL)
-						for docno, text in docs:
+						docs = fdocs.split(r"<DOC>")
+						for doc in docs[1:]:
+							docno = re.findall(r"<DOCNO> (.*?) </DOCNO>", doc)
+							text = re.findall(r"<TEXT>(.*?)</TEXT>", doc, re.DOTALL)
 							index.add_document(text,docno)
 
     # Part 2
-	
+
 	results = ""
 	boolean_retrieval = BooleanRetrieval(index)
 
