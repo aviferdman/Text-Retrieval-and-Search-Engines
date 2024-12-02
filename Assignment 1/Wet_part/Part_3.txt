@@ -1,20 +1,23 @@
-the
-of
-a
-in
-and
-to
-said
-for
-on
-that
-memphia
-conomination
-platinumsellers
-fiverecord
-platinumhaired
-specifially
-indescretion
-biennially
-phofo
-whitewigged
+The Top 10 Frequent Tokes are:
+Token: 'the', Number of Occurrences: 242067
+Token: 'of', Number of Occurrences: 238932
+Token: 'in', Number of Occurrences: 236964
+Token: 'a', Number of Occurrences: 236963
+Token: 'and', Number of Occurrences: 236670
+Token: 'to', Number of Occurrences: 235720
+Token: 'for', Number of Occurrences: 219079
+Token: 'said', Number of Occurrences: 218301
+Token: 'on', Number of Occurrences: 213235
+Token: 'that', Number of Occurrences: 204381
+
+The Bottom 10 Frequent Tokes are:
+Token: 'memphia', Number of Occurrences: 1
+Token: 'platinumsellers', Number of Occurrences: 1
+Token: 'fiverecord', Number of Occurrences: 1
+Token: 'platinumhaired', Number of Occurrences: 1
+Token: 'conomination', Number of Occurrences: 1
+Token: 'specifially', Number of Occurrences: 1
+Token: 'indescretion', Number of Occurrences: 1
+Token: 'phofo', Number of Occurrences: 1
+Token: 'whitewigged', Number of Occurrences: 1
+Token: 'metroiii', Number of Occurrences: 1

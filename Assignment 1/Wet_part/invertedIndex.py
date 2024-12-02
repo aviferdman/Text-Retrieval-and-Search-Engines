@@ -39,14 +39,20 @@ class InvertedIndex:
 			print(f'{word} -> {postings}')
 
 	def get_top_occurrences(self, n):
+		# use heapq to retrieve the nsmallest as it more efficient than sorting
 		top_occurrences_tokens = heapq.nlargest(n, self.index.keys(), key=lambda k: len(self.index[k]))
-
-		return top_occurrences_tokens
+		result_string = "The Top 10 Frequent Tokes are:\n"
+		for token in top_occurrences_tokens:
+			result_string += f"Token: '{token}', Number of Occurrences: {len(self.index[token])}\n"
+		return result_string
 
 	def get_bottom_occurrences(self, n):
+		# use heapq to retrieve the nsmallest as it more efficient than sorting
 		bottom_occurrences_tokens = heapq.nsmallest(n, self.index.keys(), key=lambda k: len(self.index[k]))
-
-		return bottom_occurrences_tokens
+		result_string = "The Bottom 10 Frequent Tokes are:\n"
+		for token in bottom_occurrences_tokens:
+			result_string += f"Token: '{token}', Number of Occurrences: {len(self.index[token])}\n"
+		return result_string
 
 def main():
 
@@ -78,16 +84,16 @@ def main():
 							docno = re.findall(r"<DOCNO> (.*?) </DOCNO>", doc)
 							text = re.findall(r"<TEXT>(.*?)</TEXT>", doc, re.DOTALL)
 							index.add_document(text,docno)
-	print(len(index.doc_ids))
 
     # Part 3
 
 	results = index.get_top_occurrences(10)
+	results += "\n"
 	results += index.get_bottom_occurrences(10)
 
 	# Write the results to "Part_3.txt"
 	with open("Part_3.txt", "w") as file:
-		file.write("\n".join(results))
+		file.write(results)
 
 if __name__ == "__main__":
 	main()
