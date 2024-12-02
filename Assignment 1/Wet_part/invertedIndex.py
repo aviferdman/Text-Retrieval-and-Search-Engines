@@ -22,12 +22,13 @@ class InvertedIndex:
 		doc_id = len(self.doc_ids)
 		self.doc_ids[doc_id] = docno[0]
 
+		sob = set()
 		# create set of words and add it to data sreucture.
 		for t_section in text:
 			words = t_section.strip()
-			sob = set(words.split())
-			for word in sob:
-				self.index[word].append(doc_id)
+			sob = sob.union(set(words.split()))
+		for word in sob:
+			self.index[word].append(doc_id)
 
 	def print(self):
 		"""
@@ -77,6 +78,7 @@ def main():
 							docno = re.findall(r"<DOCNO> (.*?) </DOCNO>", doc)
 							text = re.findall(r"<TEXT>(.*?)</TEXT>", doc, re.DOTALL)
 							index.add_document(text,docno)
+	print(len(index.doc_ids))
 
     # Part 3
 
